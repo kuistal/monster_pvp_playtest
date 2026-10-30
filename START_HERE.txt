@@ -1,0 +1,28 @@
+MONSTER PVP v0.23 - READY TO PLAY
+
+All gameplay files, images, card art, and Runic Basalt UI assets are already
+included in this folder. Do not unpack any separate UI ZIP over the game.
+
+WINDOWS
+1. Install Python 3.10+ from python.org, enable Add Python to PATH.
+2. Double-click start_windows.bat. On first launch it installs Flask if needed.
+3. Open http://127.0.0.1:5000 if your browser does not open automatically.
+
+MAC / LINUX
+1. In terminal: sh start_linux_mac.sh
+2. Open http://127.0.0.1:5000
+
+TWO PLAYERS
+Player 1 creates a room. Player 2 opens the same server address,
+clicks Join and enters the six-character code.
+On another computer in the same local network use the host PC's LAN IP.
+
+FILES
+- app.py / data.py: game engine, unchanged since v0.21.
+- templates/index.html / static/app.js: playable client.
+- static/style.css + static/ui-theme-v22.css: main UI + Runic Basalt.
+- static/ui/v22/: 34 original UI assets.
+- static/card_art/: ability, terrain and neutral card art.
+- static/img/: 6 monster portraits and their awakened forms.
+
+This build is a playtest prototype. Some advanced abilities need manual handling.

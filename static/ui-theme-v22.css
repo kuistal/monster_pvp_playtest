@@ -1,0 +1,205 @@
+/* Monster PvP v0.22 | Runic Basalt / Compact HUD
+   Decoration is asset-backed; game state and readable labels remain live HTML.
+   In particular, do not change board geometry, hand grid sizing or card artworks. */
+:root{
+  --stone-900:#0a121a;
+  --stone-800:#121f2b;
+  --stone-700:#1a2a38;
+  --rune-silver:#849aa8;
+  --rune-gold:#c5a879;
+  --ui-path:'/static/ui/v22/';
+}
+body{
+  background-image:
+    radial-gradient(circle at 25% 10%, rgba(77,125,152,.10), transparent 38%),
+    radial-gradient(circle at 85% 70%, rgba(157,114,64,.06), transparent 34%),
+    linear-gradient(180deg,rgba(8,14,21,.88),rgba(8,15,22,.93)),
+    url('/static/ui/v22/backgrounds/slate-surface.webp');
+  background-size:auto,auto,auto,512px 320px;
+}
+/* Basalt panels with preserved contrast and restrained borders */
+header,
+#game .panel,
+#game .team-banner,
+#game .turn-center,
+#game .hand-area,
+.lobby-match-card,.lobby-deck-card,.lobby-guide-card,
+.deck-shell,.guide-shell,.choice-shell,.modal-card.collection,.preview-dialog,.monster-dialog,
+.lobby-stage,.deck-library,.deck-sidebar,.guide-section{
+  background-image:
+    linear-gradient(145deg, rgba(20,34,48,.93), rgba(10,20,31,.97)),
+    url('/static/ui/v22/backgrounds/slate-surface.webp');
+  background-repeat:no-repeat,repeat;
+  background-size:cover,512px 320px;
+  border-color:rgba(147,164,168,.24);
+  box-shadow:inset 0 1px 0 rgba(218,218,193,.06),inset 0 -1px 0 rgba(0,0,0,.28),0 10px 26px rgba(0,0,0,.22);
+}
+#game .hand-area{border-top:1px solid rgba(197,168,121,.52)}
+header{border-bottom:1px solid rgba(174,153,109,.39)}
+#game .team-banner.fire{border-left:3px solid rgba(232,129,74,.7)}
+#game .team-banner.air{border-right:3px solid rgba(99,192,229,.72)}
+#game .turn-center{border-color:rgba(200,164,111,.38);box-shadow:inset 0 1px 0 rgba(240,210,151,.14),0 10px 25px rgba(0,0,0,.28)}
+#game .turn-center #ap{color:#ecd2a2}
+#game .title-line h2,.board-head h2,.hand-heading h2,.modal-head h2,.guide-top h2,.deck-topbar h2,.lobby-dashboard h2,
+#game .turn-center #turn-text{color:#f3ebdc}
+.eyebrow{color:#b5c6d4}
+/* Carved buttons: backgrounds are lightweight reusable SVG overlays. */
+button:not(.token-info):not(.monster-info-button):not(.preview-close){
+  position:relative;
+  background-image:linear-gradient(180deg,#283b4b 0%,#182a39 48%,#142330 100%),url('/static/ui/v22/buttons/button-steel.svg');
+  background-size:100% 100%,100% 100%;
+  background-repeat:no-repeat;
+  background-position:center;
+  border:1px solid #516879;
+  border-radius:11px;
+  box-shadow:inset 0 1px 0 rgba(218,231,235,.12),inset 0 -3px 4px rgba(0,0,0,.18),0 3px 10px rgba(0,0,0,.22);
+  color:#e5edf3;
+  text-shadow:0 1px 1px rgba(0,0,0,.3);
+  transition:filter .16s ease,transform .16s ease,box-shadow .16s ease,border-color .16s ease;
+}
+button:not(.token-info):not(.monster-info-button):not(.preview-close)::before{
+  content:"";position:absolute;inset:0;
+  border-radius:inherit;pointer-events:none;
+  background-image:url('/static/ui/v22/buttons/button-steel.svg');
+  background-size:100% 100%;background-position:center;
+  opacity:.17;
+}
+button.accent:not(.token-info):not(.monster-info-button):not(.preview-close),
+#game #end-turn:not(:disabled){
+  background-image:linear-gradient(180deg,#e0c691 0%,#c3a271 48%,#a78554 100%);
+  border:1px solid #dbc396;
+  color:#1c2125;
+  text-shadow:0 1px 0 rgba(255,243,211,.38);
+  font-weight:750;
+  box-shadow:inset 0 2px 0 rgba(255,244,212,.42),inset 0 -2px 3px rgba(88,60,33,.22),0 3px 10px rgba(0,0,0,.25);
+}
+button.accent:not(.token-info):not(.monster-info-button):not(.preview-close)::before,
+#game #end-turn:not(:disabled)::before{
+  background-image:url('/static/ui/v22/buttons/button-corners.svg');opacity:.27;
+}
+button:hover:not(:disabled){filter:brightness(1.12);transform:translateY(-1px)}
+button:active:not(:disabled){transform:translateY(1px);box-shadow:inset 0 2px 6px rgba(0,0,0,.36)}
+button:disabled{opacity:.54;filter:saturate(.42)}
+button:focus-visible{outline:2px solid #d7c08c;outline-offset:2px}
+#reaction-panel button:not(:disabled),#reaction-cancel:not(:disabled){
+  background-image:linear-gradient(180deg,#315467,#1b394a);
+  border-color:#6bb5cd;
+}
+#reaction-panel button:not(:disabled)::before,#reaction-cancel:not(:disabled)::before{background-image:url('/static/ui/v22/buttons/button-reaction.svg')}
+#deck-delete:not(:disabled){border-color:#aa655f;background-image:linear-gradient(180deg,#59312f,#2e2328)}
+#deck-delete::before{background-image:url('/static/ui/v22/buttons/button-danger.svg')!important}
+#game .control-actions button,#game .hand-controls button{letter-spacing:.01em;font-weight:650}
+#game .control-actions button{white-space:nowrap}
+/* Panels, menus and collection: reduce visual duplication, emphasize content. */
+#collection-grid .game-card,#deck-card-grid .game-card,.game-card{
+  border-color:rgba(185,162,121,.46);
+  box-shadow:0 7px 19px rgba(0,0,0,.25),inset 0 0 0 1px rgba(201,190,166,.07);
+  background:linear-gradient(180deg,#111b26,#09131d);
+}
+#collection-grid .game-card:hover,#deck-card-grid .game-card:hover{border-color:rgba(215,190,140,.85)}
+.game-card .card-content strong{color:#f7ecda}
+.game-card .effect{color:#d9e5ed}
+.game-card .cost{background:#0e1d28;border-color:#a58d62}
+.game-card .card-owner{color:#dcc7a1;background:rgba(197,168,121,.08)}
+.filters,.collection-tabs,.deck-searchrow,.deck-tools,.guide-nav{gap:8px}
+.filters button.current,.collection-tabs button.current,.monster-form-controls button.current{
+  background-image:linear-gradient(180deg,#d6c196,#ac8a58)!important;color:#1a1d1d!important;border-color:#d8bd89!important;
+}
+#deck-progress-fill{background:linear-gradient(90deg,#6ba9c1,#c5ac79)}
+input:focus,select:focus{border-color:#bfa272;box-shadow:0 0 0 3px rgba(200,170,117,.13)}
+/* The playing table and all six tiles share one carved basalt material. */
+#game .battleboard-shell,.battleboard-shell{
+  background-image:
+    linear-gradient(145deg,rgba(14,22,31,.48),rgba(6,13,19,.70)),
+    url('/static/ui/v22/backgrounds/slate-surface.webp');
+  background-size:cover,512px 320px;
+  border:1px solid #a48d65;
+  box-shadow:inset 0 0 0 2px #5b4b37,inset 0 0 0 6px #171e22,inset 0 0 26px #000b,0 18px 30px #0008;
+}
+.battleboard-shell::before,.battleboard-shell::after{content:""!important;top:8px!important;width:53px;height:53px;opacity:.82;background-image:url('/static/ui/v22/board/board-corner.svg');background-size:contain;filter:drop-shadow(0 0 7px rgba(211,186,138,.08))}
+.battleboard-shell::before{left:8px}.battleboard-shell::after{right:8px;transform:scaleX(-1)}
+#game .battleboard-rim,.battleboard-rim{
+  background:linear-gradient(140deg,#657482 0%,#a2a095 6%,#2c363e 13%,#101b25 42%,#384a53 76%,#8b7959 96%);
+  box-shadow:inset 0 0 0 1px rgba(224,204,165,.57),inset 0 0 0 4px #1e2a32,inset 0 2px 12px #000a;
+}
+#game .arena,.arena{
+  background-image:
+    linear-gradient(165deg,rgba(12,22,31,.87),rgba(10,19,28,.87)),
+    url('/static/ui/v22/backgrounds/slate-surface.webp');
+  background-size:cover,512px 320px;
+  border-color:#111b24;
+}
+#game .tile.board-cell,.tile.board-cell{
+  position:relative;
+  background-image:linear-gradient(160deg,rgba(15,26,36,.5),rgba(8,16,25,.52)),url('/static/ui/v22/board/basalt-tile.webp');
+  background-size:cover,cover;
+  background-position:center;
+  border-color:#536473;
+  box-shadow:inset 0 0 0 1px rgba(217,210,175,.12),inset 0 5px 15px #0009,0 3px 4px #0005;
+  transition:border-color .17s ease,filter .17s ease,box-shadow .17s ease;
+}
+.tile.board-cell::before{opacity:0;transition:opacity .17s ease}
+.tile.board-cell.has-terrain::before{opacity:.62!important;filter:saturate(.95) brightness(.95)}
+.tile.board-cell::after{
+  content:"";position:absolute;inset:2px;z-index:1;pointer-events:none;
+  background-image:url('/static/ui/v22/board/tile-frame.svg');background-size:100% 100%;background-repeat:no-repeat;
+  border:0;opacity:.64;border-radius:12px;
+}
+.tile.board-cell.is-actionable{border-color:#b8c394!important;box-shadow:0 0 0 2px rgba(163,203,185,.25),inset 0 5px 15px #0009}
+.tile.board-cell:hover{filter:brightness(1.07)}
+.tile.board-cell.is-clash{border-color:#ca936b!important;box-shadow:inset 0 0 0 1px #ac7051,0 0 0 2px rgba(211,109,71,.28),0 5px 18px #0008}
+.tile.board-cell .cell-rune{opacity:.55}
+.tile.board-cell.empty .cell-plate .plate-empty{
+  background-image:url('/static/ui/v22/board/vacant-rune.svg');
+  background-repeat:no-repeat;background-size:100% 100%;border:0;background-color:transparent;color:transparent;
+}
+#game .tile.board-cell .cell-top,.tile.board-cell .cell-title,.tile.board-cell .cell-plate,.tile.board-cell .cell-foot{z-index:2}
+#game .tile.board-cell .tilename{color:#f0efe7}
+#game .tile.board-cell .ownership{color:#cadbe2}
+#game .tile.board-cell .slotnum{border-color:#a99c83;background:linear-gradient(180deg,#1b2a33,#0b151f);color:#e7d6b1}
+.battleboard-top,.battleboard-bottom{color:#c6b38d}
+.battleboard-mark{color:#d0c2a3}
+/* Little 2.5D portrait medallions and restrained status treatments. */
+.tile .battle-token{
+  background:linear-gradient(145deg,rgba(19,33,44,.98),rgba(7,15,24,.98));
+  border-color:rgba(184,171,146,.45);
+  box-shadow:inset 0 1px 0 #ffffff15,0 3px 8px #0009;
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+.tile .battle-token.fire{border-left-color:#d17b4e}
+.tile .battle-token.air{border-left-color:#6aaac3}
+.tile .battle-token.selected{box-shadow:0 0 0 2px rgba(227,202,151,.72),0 5px 13px #0009}
+.tile .token-portrait{position:relative;overflow:visible;border:0;background:none;box-shadow:none}
+.tile .token-portrait img{border-radius:50%;border:2px solid #192a37;filter:contrast(1.04)}
+.tile .battle-token.fire .token-portrait{background:url('/static/ui/v22/tokens/fire-ring.svg') center/cover no-repeat}
+.tile .battle-token.air .token-portrait{background:url('/static/ui/v22/tokens/air-ring.svg') center/cover no-repeat}
+.tile .battle-token .token-portrait img{width:82%;height:82%;position:absolute;inset:9%;object-fit:cover}
+.tile .token-name{color:#f6eddb}
+.tile .token-hp{color:#b0e8c5}
+.tile .token-attack{color:#ebcda0}
+.tile .token-effect{padding-left:18px;min-height:16px;background-repeat:no-repeat;background-position:2px center;background-size:13px 13px}
+.tile .token-effect.burn{background-image:url('/static/ui/v22/icons/status-burn.svg');background-color:#372a22;color:#f2b39b}
+.tile .token-effect.shield{background-image:url('/static/ui/v22/icons/status-shield.svg');background-color:#1e3848;color:#b6e4f2}
+.tile .token-effect.buff{background-image:url('/static/ui/v22/icons/status-buff.svg');background-color:#253b32;color:#bfdfb9}
+.tile .token-effect.quiet{padding-left:0;background:none}
+/* Status accents in lists are deliberately not overly ornamental. */
+.monster-item{border-color:rgba(151,172,179,.2);background:rgba(9,18,28,.82)}
+.monster-item.fire{border-left:2px solid rgba(227,129,75,.6)}
+.monster-item.air{border-left:2px solid rgba(112,198,224,.65)}
+.monster-info-button,.token-info,.preview-close{background:linear-gradient(180deg,#263748,#101b27);border-color:#8f9ca0;color:#eee3ce}
+/* Clean hand slots, values are fully readable and centered. */
+#game .hand-cards .game-card{
+  border-color:rgba(179,158,118,.57);
+  box-shadow:inset 0 0 0 1px #ffffff08,0 5px 14px #0008;
+}
+#game .hand-cards .game-card:hover{transform:translateY(-3px)}
+#game .hand-cards .game-card.selected{border-color:#d8c08c;box-shadow:0 0 0 2px rgba(215,185,124,.58),0 5px 17px #0009}
+#game .hand-cards .effect{color:#dbe7ee}
+/* Accessible restrained motion. */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+@media (max-width:780px){
+  .battleboard-shell::before,.battleboard-shell::after{display:none}
+  button:not(.token-info):not(.monster-info-button):not(.preview-close){background-image:linear-gradient(180deg,#2b3d4d,#152430)}
+}

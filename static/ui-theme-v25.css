@@ -1,0 +1,326 @@
+/* Monster PvP v0.25 | Runic Basalt / Compact HUD polish.
+   Presentation-only layer, deliberately loaded after v22 theme. */
+:root{--ui-gold:#d9bb84;--ui-gold-dim:#8e7654;--ui-steel:#8fa6b3;--ui-slate:#101a25;--ui-ink:#0a1119}
+
+/* Unify the hierarchy: slate surfaces, low-contrast engraving, gold only for actions. */
+#game .left-pane,#game .right-pane,#game .controlbar,#game .hand-area,
+#game .scoreline section,#game details.manual.panel{
+  background:linear-gradient(175deg,rgba(19,30,42,.97),rgba(10,18,28,.98));
+  border:1px solid rgba(145,163,169,.24);
+  box-shadow:inset 0 1px rgba(225,234,234,.07),0 8px 24px #0006;
+}
+#game .turn-center{border-color:rgba(213,182,122,.48)!important;background:linear-gradient(180deg,#1c2b3a,#0e1721)!important}
+#game .scoreline .team-banner.fire{border-left:3px solid #bc6c48}
+#game .scoreline .team-banner.air{border-right:3px solid #629fb7}
+#game #ap{color:#e5cb99}
+#game .board-head{padding-bottom:3px}
+#game .board-head .eyebrow,#game .hand-heading .eyebrow{color:#93b1c0}
+#game .board-head h2,#game .hand-heading h2{color:#f5ebd6}
+#game .left-pane .title-line,#game .right-pane .title-line{padding-bottom:8px;border-bottom:1px solid rgba(171,186,192,.14)}
+#game .left-pane .title-line h2,#game .right-pane .title-line h2{color:#f1e5cb}
+#game .left-pane .minihead{letter-spacing:.12em;color:#9ab8c8}
+#game .monster-item{border:1px solid rgba(161,183,189,.18);border-radius:12px;background:linear-gradient(180deg,#111f2c,#0b1520)}
+#game .monster-item.fire{border-left:3px solid rgba(208,109,70,.74)}
+#game .monster-item.air{border-left:3px solid rgba(98,169,195,.8)}
+#game .monster-item.selected{border-color:#d4b879;box-shadow:inset 0 0 0 1px rgba(237,203,130,.24)}
+#game .monster-info strong{font-weight:750}
+#game .monster-info small{color:#b4c8d4}
+#game .monster-info .hpbar{border-color:#456374;background:#0a1720}
+#game .monster-info .hpbar i{background:linear-gradient(90deg,#5db6ae,#7fd0ac)}
+#game .right-pane .stats{border-radius:12px;background:#0b1521;border-color:#344b5b;color:#e0ebed}
+#game .right-pane .entry{font-size:12px;line-height:1.4;padding:8px 10px;border-left:2px solid rgba(155,183,192,.28)}
+#game .right-pane .entry:first-child{border-left-color:#d8b980;background:linear-gradient(180deg,#172839,#0e1b29)}
+#game .right-pane .help{margin-top:auto;border-color:#344755;background:#0b1622}
+#game .right-pane .help strong{color:#dfc58f}
+#game .right-pane details.manual.panel{margin-top:8px}
+
+/* Board itself is a distinct, shallow 2.5D physical frame. */
+#game .battleboard-shell{
+  background-image:linear-gradient(150deg,rgba(13,21,30,.66),rgba(6,12,18,.82)),url('/static/ui/v22/backgrounds/slate-surface.webp');
+  background-size:cover,500px 310px;
+  border-color:#806d50;
+  box-shadow:inset 0 0 0 2px rgba(189,160,109,.24),inset 0 0 0 6px rgba(11,17,24,.9),0 14px 34px #0009;
+}
+#game .battleboard-rim{
+  background:linear-gradient(135deg,#6c7778 0%,#2a3741 14%,#0b1722 52%,#38434b 86%,#8f8060 100%);
+  box-shadow:inset 0 0 0 1px #9d926f,inset 0 0 0 4px #0d1822,inset 0 4px 20px #0009;
+}
+#game .arena{background-image:linear-gradient(180deg,rgba(6,13,19,.83),rgba(6,13,19,.78)),url('/static/ui/v22/board/basalt-tile.webp');background-size:cover,360px 300px}
+#game .tile.board-cell{
+  background-image:linear-gradient(160deg,rgba(13,21,30,.45),rgba(6,12,18,.52)),url('/static/ui/v22/board/basalt-tile.webp');
+  border:1px solid rgba(125,143,149,.58);box-shadow:inset 0 1px 2px #fff1,inset 0 7px 16px #0006,0 3px 5px #0005;
+}
+#game .tile.board-cell::after{opacity:.35!important}
+#game .tile.board-cell.has-terrain::before{opacity:.54!important;filter:saturate(1.12) brightness(.91)!important}
+#game .tile.board-cell.has-occupants::before{opacity:.38!important}
+#game .tile.board-cell.is-actionable{border-color:#c9c98b!important;box-shadow:0 0 0 2px #b5c28c4f,inset 0 6px 14px #0007}
+#game .tile.board-cell.is-clash{border-color:#e19c77!important;box-shadow:inset 0 0 0 1px #c67953,0 0 0 2px #c8784e66,0 7px 16px #0007}
+#game .tile.board-cell .tilename{font-family:Georgia,serif;font-weight:750;color:#f3ebdc;text-shadow:0 2px 8px #000d}
+#game .tile.board-cell .ownership{color:#d1dce0}
+#game .tile.board-cell .cell-stage{display:flex;align-items:center;justify-content:center}
+#game .tile.board-cell .cell-stage-core{background:rgba(9,16,22,.43);border-color:rgba(183,164,125,.18);box-shadow:inset 0 1px 0 #fff1}
+#game .tile.board-cell.has-occupants .cell-stage{flex:0 0 3px!important;min-height:3px!important;padding:0!important}
+#game .tile.board-cell.has-occupants .cell-stage-core{display:none}
+#game .tile.board-cell.has-occupants .cell-rune{opacity:.09}
+#game .tile.board-cell .cell-foot{border-top-color:rgba(201,181,147,.18);color:#a9bdc9}
+#game .tile.board-cell .cell-foot .cell-action{color:#dbbe8b}
+#game .tile.board-cell .clash-mark{background:#5c2f27;color:#ffe5c7;border-color:#d6926d}
+
+/* Monster medallion + readable data: the unit is foreground, terrain stays background. */
+#game .tile.board-cell .tokens{position:relative;z-index:6;display:flex;flex-direction:column;gap:5px;align-items:center;margin-top:auto;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;min-height:0}
+#game .tile.board-cell.occupants-1 .battle-token{width:min(100%,300px)}
+#game .tile.board-cell.occupants-2 .battle-token,#game .tile.board-cell.occupants-3 .battle-token{width:100%}
+#game .tile .battle-token{
+  display:grid;grid-template-columns:clamp(42px,4vw,62px) minmax(0,1fr);
+  gap:9px;min-height:78px;padding:8px 27px 8px 9px;
+  border-radius:14px;border:1px solid #a38d69;
+  background:linear-gradient(165deg,#1f2730ee 0%,#101924fa 58%,#0a141ffa 100%);
+  box-shadow:0 6px 0 #03090eab,0 10px 17px #0009,inset 0 1px 0 #fff2;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+#game .tile .battle-token.fire{border-left:4px solid #cf784a;background:linear-gradient(160deg,#36241fee,#17212cee 55%,#0b151ffa)}
+#game .tile .battle-token.air{border-left:4px solid #6fbdd5;background:linear-gradient(160deg,#233943ee,#162633fa 55%,#0b151ffa)}
+#game .tile .battle-token.selected{border-color:#f3d89b!important;box-shadow:0 0 0 2px #f3d89b80,0 6px 0 #03090eab,0 14px 25px #0009}
+#game .tile .battle-token:hover{transform:translateY(-2px);border-color:#eed19a}
+#game .tile .battle-token .token-portrait{
+  position:relative;overflow:visible!important;
+  width:clamp(42px,4vw,62px);height:clamp(42px,4vw,62px);flex-basis:auto;
+  border:0!important;border-radius:50%;
+  box-shadow:0 6px 13px #0009;
+}
+#game .tile .battle-token .token-portrait img{
+  position:absolute!important;inset:10%!important;width:80%!important;height:80%!important;
+  display:block;object-fit:cover;object-position:center 20%;border-radius:50%!important;border:2px solid #091620!important;
+  box-shadow:inset 0 0 8px #0006;filter:contrast(1.04) saturate(1.09)
+}
+#game .tile .battle-token.fire .token-portrait{background:url('/static/ui/v22/tokens/fire-ring.svg') center/contain no-repeat!important}
+#game .tile .battle-token.air .token-portrait{background:url('/static/ui/v22/tokens/air-ring.svg') center/contain no-repeat!important}
+#game .tile .battle-token .token-main{display:flex;flex-direction:column;gap:4px;min-width:0}
+#game .tile .battle-token .token-header{display:flex;align-items:center;gap:7px;justify-content:space-between}
+#game .tile .battle-token .token-name{font:750 clamp(12px,.9vw,15px)/1.05 Georgia,serif;color:#fff1d5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#game .tile .battle-token .token-team{font-size:9px;color:#9fb9c6;letter-spacing:.11em}
+#game .tile .battle-token .token-stats{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+#game .tile .battle-token .token-stat{display:inline-flex;align-items:center;gap:3px;padding:3px 6px;border-radius:7px;background:#091722b8;border:1px solid #657d8673;white-space:nowrap}
+#game .tile .battle-token .token-stat.cp{border-color:#4d8f8194}
+#game .tile .battle-token .token-stat.atk{border-color:#b4915f8c}
+#game .tile .battle-token .token-stat b{font:800 14px/1.1 'Segoe UI',Arial,sans-serif;color:#f6f1e8}
+#game .tile .battle-token .token-stat.cp b{color:#a3efce}
+#game .tile .battle-token .token-stat.atk b{color:#f5d49c}
+#game .tile .battle-token .token-stat small{font:700 9px/1 'Segoe UI',Arial,sans-serif;color:#c3cfd5}
+#game .tile .battle-token .token-hp-track{height:5px;background:#09151b;border-radius:999px;border:1px solid #3d5360;overflow:hidden;margin:0}
+#game .tile .battle-token .token-effects{display:flex;align-items:center;gap:4px;min-height:16px;flex-wrap:wrap;margin:0}
+#game .tile .battle-token .token-effect{font:700 9px/1.15 'Segoe UI',Arial,sans-serif;padding:2px 6px 2px 20px;border-radius:5px;color:#d8e9ec;border:1px solid #425b68;background-position:4px center!important;background-size:13px!important}
+#game .tile .battle-token .token-effect.quiet{padding:2px 0;border:0;background:none;color:#9db2bd;font-weight:500}
+#game .tile .battle-token .token-info{position:absolute;top:6px;right:6px;width:20px;height:20px;background:#172936;color:#eed8a9;border:1px solid #8f9d96;border-radius:50%;font-size:12px}
+#game .tile .battle-token .token-aura{opacity:.25;pointer-events:none}
+
+/* Tight multi-unit encounters: no overlapping labels, preserve click targets. */
+#game .tile.board-cell.occupants-2 .tokens,#game .tile.board-cell.occupants-3 .tokens{gap:4px;justify-content:flex-end}
+#game .tile.board-cell.occupants-2 .battle-token,#game .tile.board-cell.occupants-3 .battle-token{grid-template-columns:34px minmax(0,1fr);min-height:50px;padding:4px 24px 4px 5px;gap:6px;border-radius:10px;box-shadow:0 4px 9px #0009}
+#game .tile.board-cell.occupants-2 .token-portrait,#game .tile.board-cell.occupants-3 .token-portrait{width:34px;height:34px;flex-basis:34px}
+#game .tile.board-cell.occupants-2 .token-main,#game .tile.board-cell.occupants-3 .token-main{gap:2px}
+#game .tile.board-cell.occupants-2 .token-name,#game .tile.board-cell.occupants-3 .token-name{font-size:11px}
+#game .tile.board-cell.occupants-2 .token-team,#game .tile.board-cell.occupants-3 .token-team{display:none}
+#game .tile.board-cell.occupants-2 .token-stats,#game .tile.board-cell.occupants-3 .token-stats{gap:4px}
+#game .tile.board-cell.occupants-2 .token-stat,#game .tile.board-cell.occupants-3 .token-stat{padding:1px 4px}
+#game .tile.board-cell.occupants-2 .token-stat b,#game .tile.board-cell.occupants-3 .token-stat b{font-size:11px}
+#game .tile.board-cell.occupants-2 .token-stat small,#game .tile.board-cell.occupants-3 .token-stat small{font-size:8px}
+#game .tile.board-cell.occupants-2 .token-effects,#game .tile.board-cell.occupants-3 .token-effects{min-height:0}
+#game .tile.board-cell.occupants-2 .token-effect,#game .tile.board-cell.occupants-3 .token-effect{font-size:8px;padding:1px 4px 1px 17px;background-size:11px!important}
+#game .tile.board-cell.occupants-2 .token-effect.quiet,#game .tile.board-cell.occupants-3 .token-effect.quiet{display:none}
+#game .tile.board-cell.occupants-2 .token-hp-track,#game .tile.board-cell.occupants-3 .token-hp-track{height:4px}
+
+/* Clear action affordances instead of decoration for its own sake. */
+#game .controlbar{gap:12px}
+#game .controlbar #selected-label{color:#f8e6bf}
+#game .controlbar #selected-help{color:#b8cbd7;line-height:1.25}
+#game .control-actions{gap:6px}
+#game .control-actions button{background-image:linear-gradient(180deg,#344755,#192b38);border-color:#617887;font-weight:700;color:#e7f2f8}
+#game #play-card{background-image:linear-gradient(180deg,#dfc28a,#ac8653);border-color:#e6cb96;color:#1c1b16;text-shadow:0 1px 0 #fffa}
+#game #attack-mode{border-color:#b98167;color:#ffdec5}
+#game #destroy-mode{border-color:#84676a;color:#e3b6b4}
+#game #cancel-mode{color:#aabac6}
+#game .control-actions button.is-active{border-color:#f0d39b!important;box-shadow:inset 0 0 0 1px #d9b977a8,0 0 0 2px #d9b97731!important;color:#ffe7ae!important}
+#game .hand-area{border-top:2px solid #b49563;border-radius:14px}
+#game .hand-heading{border-bottom:1px solid #d5b48121;padding-bottom:5px}
+#game .hand-cards .game-card{border:1px solid #9b8866;border-radius:12px;box-shadow:0 4px 0 #02070b,0 10px 18px #0008;transition:transform .18s,box-shadow .18s}
+#game .hand-cards .game-card:hover{transform:translateY(-4px);box-shadow:0 7px 0 #02070b,0 12px 20px #0009}
+#game .hand-cards .game-card.selected{border-color:#ffe2a7;box-shadow:0 0 0 2px #ecd2988a,0 4px 0 #02070b,0 12px 20px #000a}
+#game .hand-cards .card-content strong{color:#f3ebd9}
+#game .hand-cards .effect{color:#dbe7ea}
+#game .hand-cards .card-owner{background:#131e25;color:#cbb794;border-color:#59656a}
+
+/* Collections and deck editor share one visual language without crowding data. */
+.modal-card.collection,.deck-shell,.guide-shell,.preview-dialog,.monster-dialog{border:1px solid #8c826a;background:linear-gradient(170deg,#182535,#0b1520)}
+.collection-tabs button,.filters button,.guide-nav a{border-color:#566e77}
+.collection-tabs button.current,.filters button.current{background-image:linear-gradient(180deg,#ddc58f,#b69862)!important;color:#161c22!important}
+#collection-grid .game-card,#deck-card-grid .game-card{border-color:#786e5c}
+#collection-grid .game-card:hover,#deck-card-grid .game-card:hover{transform:translateY(-3px);border-color:#dbbd82}
+#deck-contents .deck-entry{border-color:#3b5561}
+
+/* Adapt medallions to height instead of squeezing all text into one line. */
+@media (min-width:1101px) and (min-height:640px){
+ #game .center-pane{grid-template-rows:auto minmax(0,1fr) auto minmax(220px,31vh)}
+ #game .tile.board-cell{padding:7px 8px}
+ #game .tile.board-cell.has-occupants .cell-foot{display:none}
+ #game .tile.board-cell .tokens{overflow-y:auto;overflow-x:hidden;gap:5px}
+ #game .tile .battle-token{grid-template-columns:clamp(40px,3.5vw,54px) minmax(0,1fr);min-height:64px;padding:6px 25px 6px 6px;gap:7px}
+ #game .tile .battle-token .token-portrait{width:clamp(40px,3.5vw,54px);height:clamp(40px,3.5vw,54px)}
+ #game .tile .battle-token .token-name{font-size:12px}
+ #game .tile .battle-token .token-team{font-size:8px}
+ #game .tile .battle-token .token-stat b{font-size:12px}
+ #game .tile .battle-token .token-stat small{font-size:8px}
+ #game .tile .battle-token .token-effect{font-size:8px}
+}
+@media (min-width:700px) and (max-width:1100px) and (min-height:640px){
+ #game .tile.board-cell.has-occupants .cell-foot{display:none}
+ #game .tile.board-cell .tokens{overflow-y:auto;overflow-x:hidden}
+ #game .tile .battle-token{grid-template-columns:40px minmax(0,1fr);min-height:64px;gap:6px;padding:6px 23px 6px 6px}
+ #game .tile .battle-token .token-portrait{width:40px;height:40px}
+ #game .tile .battle-token .token-name{font-size:12px}
+ #game .tile .battle-token .token-team{display:none}
+ #game .tile .battle-token .token-stat{padding:2px 4px}
+ #game .tile .battle-token .token-stat b{font-size:12px}
+ #game .tile .battle-token .token-stat small{font-size:8px}
+ #game .tile .battle-token .token-effects{min-height:0}
+ #game .tile .battle-token .token-effect.quiet{display:none}
+}
+@media (max-height:760px) and (min-width:700px){
+ #game .tile.board-cell .cell-stage{min-height:30px}
+ #game .tile.board-cell.has-occupants .cell-stage{display:none}
+ #game .tile.board-cell .cell-foot{display:none}
+ #game .tile .battle-token{min-height:58px!important;padding-top:4px;padding-bottom:4px}
+ #game .tile .battle-token .token-portrait{width:38px;height:38px}
+ #game .tile .battle-token .token-header{gap:3px}
+}
+@media (max-width:699px), (max-height:639px){
+ #game .tile.board-cell{min-height:210px}
+ #game .tile .battle-token{grid-template-columns:48px minmax(0,1fr);min-height:70px}
+ #game .tile .battle-token .token-portrait{width:48px;height:48px}
+ #game .tile .battle-token .token-name{font-size:13px}
+ #game .tile .battle-token .token-team{font-size:9px}
+ #game .tile.board-cell.has-occupants .cell-stage{display:none}
+}
+@media (prefers-reduced-motion:reduce){#game .tile .battle-token,#game .hand-cards .game-card{transition:none!important}}
+
+/* Multimonster cells are a row of compact physical pieces, not clipped horizontal banners. */
+#game .tile.board-cell.occupants-2 .tokens,
+#game .tile.board-cell.occupants-3 .tokens{
+  display:grid!important;grid-template-rows:minmax(0,1fr);
+  align-items:end!important;justify-content:stretch!important;justify-items:stretch!important;
+  flex:0 1 auto;min-height:0;max-height:calc(100% - 34px);
+  overflow:visible!important;margin-top:auto;gap:5px;
+}
+#game .tile.board-cell.occupants-2 .tokens{grid-template-columns:repeat(2,minmax(0,1fr))}
+#game .tile.board-cell.occupants-3 .tokens{grid-template-columns:repeat(3,minmax(0,1fr))}
+#game .tile.board-cell.occupants-2 .battle-token,
+#game .tile.board-cell.occupants-3 .battle-token{
+  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-end!important;
+  min-width:0;width:100%!important;height:auto;min-height:0!important;
+  max-height:100%;padding:4px 2px 5px!important;gap:2px!important;
+  border-radius:10px!important;overflow:hidden!important;
+  background:linear-gradient(180deg,#26323cfa,#0b1620fc)!important;
+  box-shadow:0 4px 0 #03080cbb,0 6px 12px #000a!important;
+}
+#game .tile.board-cell.occupants-2 .token-portrait,
+#game .tile.board-cell.occupants-3 .token-portrait{
+  flex:0 0 auto!important;width:clamp(29px,3.6vh,46px)!important;height:clamp(29px,3.6vh,46px)!important;
+  border-radius:50%!important;box-shadow:0 2px 7px #000a!important;
+}
+#game .tile.board-cell.occupants-2 .token-main,
+#game .tile.board-cell.occupants-3 .token-main{width:100%!important;min-width:0;align-items:center;gap:2px!important;flex:0 0 auto}
+#game .tile.board-cell.occupants-2 .token-header,
+#game .tile.board-cell.occupants-3 .token-header{width:100%;justify-content:center;min-width:0}
+#game .tile.board-cell.occupants-2 .token-name,
+#game .tile.board-cell.occupants-3 .token-name{font:700 10px/1.02 'Segoe UI',Arial,sans-serif!important;max-width:100%;text-align:center}
+#game .tile.board-cell.occupants-2 .token-team,
+#game .tile.board-cell.occupants-3 .token-team{display:none!important}
+#game .tile.board-cell.occupants-2 .token-stats,
+#game .tile.board-cell.occupants-3 .token-stats{justify-content:center!important;gap:3px!important;min-width:0}
+#game .tile.board-cell.occupants-2 .token-stat,
+#game .tile.board-cell.occupants-3 .token-stat{padding:1px 3px!important;border:0!important;background:rgba(0,0,0,.25)}
+#game .tile.board-cell.occupants-2 .token-stat b,
+#game .tile.board-cell.occupants-3 .token-stat b{font-size:10px!important}
+#game .tile.board-cell.occupants-2 .token-stat small,
+#game .tile.board-cell.occupants-3 .token-stat small{font-size:7px!important}
+#game .tile.board-cell.occupants-2 .token-hp-track,
+#game .tile.board-cell.occupants-3 .token-hp-track{width:86%!important;height:3px!important}
+#game .tile.board-cell.occupants-2 .token-effects,
+#game .tile.board-cell.occupants-3 .token-effects{display:flex!important;justify-content:center;width:100%;min-height:0!important;gap:2px;margin:0}
+#game .tile.board-cell.occupants-2 .token-effect,
+#game .tile.board-cell.occupants-3 .token-effect{padding:1px 3px!important;font:700 8px/1 'Segoe UI',Arial,sans-serif!important;white-space:nowrap;max-width:100%;overflow:hidden}
+#game .tile.board-cell.occupants-2 .token-effect::before,
+#game .tile.board-cell.occupants-3 .token-effect::before{display:none}
+#game .tile.board-cell.occupants-2 .token-info,
+#game .tile.board-cell.occupants-3 .token-info{width:15px!important;height:15px!important;right:3px!important;top:3px!important;font-size:10px!important;padding:0!important}
+#game .tile.board-cell.occupants-2 .token-effect.quiet,
+#game .tile.board-cell.occupants-3 .token-effect.quiet{display:none!important}
+
+/* The compact hand keeps readable text instead of cropping its last line. */
+@media (min-width:700px) and (max-height:820px){
+  #game .hand-cards .card-art{height:39%!important;flex:0 0 39%!important}
+  #game .hand-cards .card-content{gap:3px!important;padding:5px 7px!important}
+  #game .hand-cards .card-content strong{font-size:14px!important}
+  #game .hand-cards .effect{font-size:11px!important;line-height:1.21!important;-webkit-line-clamp:3!important;min-height:0!important}
+}
+/* At wide desktop sizes the monster roster deserves useful portraits, not tiny icons. */
+@media (min-width:1440px) and (min-height:850px){
+ #game .left-pane .monster-item{grid-template-columns:46px minmax(0,1fr) 24px;gap:8px;padding:7px}
+ #game .left-pane .monster-item img{width:46px;height:46px}
+ #game .left-pane .monster-info strong{font-size:13px}
+}
+
+#game .tile.board-cell.occupants-2 .effect-word,#game .tile.board-cell.occupants-3 .effect-word{display:none}
+
+/* Final correction: preserve the full multi-monster chip, never flex-shrink it into a status strip. */
+#game .tile.board-cell.has-occupants .cell-stage{display:none!important}
+#game .tile.board-cell.has-occupants .cell-foot{display:none!important}
+#game .tile.board-cell.has-occupants .cell-title{margin:1px 0 4px!important;flex:0 0 auto}
+#game .tile.board-cell.occupants-2 .tokens,
+#game .tile.board-cell.occupants-3 .tokens{
+  flex:0 0 auto!important;min-height:62px!important;max-height:none!important;
+  overflow:visible!important;align-items:end!important;
+}
+#game .tile.board-cell.occupants-2 .battle-token,
+#game .tile.board-cell.occupants-3 .battle-token{
+  height:clamp(62px,8.5vh,94px)!important;min-height:62px!important;max-height:none!important;
+  flex:0 0 auto!important;justify-content:space-around!important;
+  overflow:hidden!important;
+}
+@media (min-width:700px) and (max-height:800px){
+ #game .tile.board-cell.occupants-2 .token-portrait,
+ #game .tile.board-cell.occupants-3 .token-portrait{width:27px!important;height:27px!important}
+ #game .tile.board-cell.occupants-2 .token-effects,
+ #game .tile.board-cell.occupants-3 .token-effects{position:absolute;right:2px;top:2px;width:auto;z-index:3}
+ #game .tile.board-cell.occupants-2 .token-info,
+ #game .tile.board-cell.occupants-3 .token-info{display:none}
+}
+
+/* Position pieces inside their terrain inset, independently of old flex height rules. */
+#game .tile.board-cell.has-occupants .cell-title{
+  position:absolute;z-index:3;top:22px;left:8px;right:8px;
+  margin:0!important;display:block;text-align:center;pointer-events:none
+}
+#game .tile.board-cell.has-occupants .cell-title .tilename{font-size:clamp(10px,.8vw,13px);line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+#game .tile.board-cell.has-occupants .cell-title .ownership{display:none}
+#game .tile.board-cell.has-occupants .tokens{
+  position:absolute!important;left:7px;right:7px;bottom:6px;top:auto;
+  width:auto!important;height:auto!important;max-height:none!important;
+  margin:0!important;overflow:visible!important;z-index:7;
+}
+#game .tile.board-cell.occupants-1 .tokens{display:flex;align-items:center;justify-content:center}
+#game .tile.board-cell.occupants-1 .battle-token{width:min(100%,290px)}
+#game .tile.board-cell.occupants-2 .tokens,#game .tile.board-cell.occupants-3 .tokens{align-items:end!important}
+@media (min-width:700px) and (max-height:820px){
+  #game .tile.board-cell.has-occupants .cell-title{top:21px}
+  #game .tile.board-cell.has-occupants .cell-title .tilename{font-size:10px}
+  #game .tile.board-cell.occupants-1 .battle-token{min-height:60px;height:60px}
+}
+
+/* v26: reaction options and unlocked awakened deck cards. */
+#game .reaction-options{display:flex;gap:8px;flex-wrap:wrap;align-items:center;min-width:0}
+#game .reaction-option{background:linear-gradient(180deg,#3c5665,#1d3340);border:1px solid #d5b67a;color:#fff5df;font-weight:700;padding:8px 12px;white-space:normal}
+#game .reaction-option:hover{border-color:#f1d9a7;box-shadow:0 0 0 2px rgba(223,189,117,.12)}
+#game #reaction-cancel[hidden]{display:none!important}
+.deck-collection-card.locked{opacity:1!important;filter:none!important}
+#game .battle-token .token-portrait{background-color:#15212a}
